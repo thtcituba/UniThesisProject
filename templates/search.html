@@ -1,10 +1,115 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card full">
+  <h2>Detailed Thesis Search</h2>
+  <form method="GET" action="{{ url_for('search') }}">
+    <div class="row">
+      <div class="field" style="min-width:360px; flex:2;">
+        <label>Free Search</label>
+        <input name="q" value="{{ filters.q or '' }}"
+               placeholder="Title / topic / keyword / abstract...">
+      </div>
+
+      <div class="field">
+        <label>Year From</label>
+        <input type="number" name="year_from" value="{{ filters.year_from or '' }}" min="1900" max="2100">
+      </div>
+
+      <div class="field">
+        <label>Year To</label>
+        <input type="number" name="year_to" value="{{ filters.year_to or '' }}" min="1900" max="2100">
+      </div>
+
+      <div class="field">
+        <label>Language</label>
+        <input name="lang" value="{{ filters.lang or '' }}" placeholder="Turkish / English">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Author</label>
+        <select name="a_id">
+          <option value="">All</option>
+          {% for a in authors %}
+            <option value="{{ a[0] }}" {% if filters.a_id == a[0] %}selected{% endif %}>{{ a[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>University</label>
+        <select name="uni_id">
+          <option value="">All</option>
+          {% for u in universities %}
+            <option value="{{ u[0] }}" {% if filters.uni_id == u[0] %}selected{% endif %}>{{ u[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Supervisor</label>
+        <select name="s_id">
+          <option value="">All</option>
+          {% for s in supervisors %}
+            <option value="{{ s[0] }}" {% if filters.s_id == s[0] %}selected{% endif %}>{{ s[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Type</label>
+        <input name="type" value="{{ filters.type or '' }}" placeholder="MSc / PhD ...">
+      </div>
+
+      <div class="actions" style="align-items:flex-end;">
+        <button type="submit">Search</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="card full">
+  <h2>📄 Results</h2>
+  <div class="muted">Ordered by year (DESC), then title (ASC)</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Title</th>
+        <th>Year</th>
+        <th>University</th>
+        <th>Author</th>
+        <th>Supervisor</th>
+        <th>Language</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if theses and theses|length > 0 %}
+        {% for t in theses %}
+        <tr>
+          <td>{{ t[0] }}</td>
+          <td>
+            <a href="{{ url_for('thesis_detail', t_no=t[0]) }}">
+              {{ t[1] }}
+            </a>
+          </td>
+          <td>{{ t[2] }}</td>
+          <td>{{ t[3] }}</td>
+          <td>{{ t[4] }}</td>
+          <td>{{ t[5] }}</td>
+          <td>{{ t[6] }}</td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="7" class="muted">No results. Try different filters.</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

@@ -1,3 +1,41 @@
+<div class="muted">Ordered by year (DESC), then title (ASC)</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tez No</th>
+      <th>Başlık</th>
+      <th>Yıl</th>
+      <th>Üniversite</th>
+      <th>Yazar</th>
+      <th>Danışman</th>
+      <th>Dil</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if theses and theses|length > 0 %}
+      {% for t in theses %}
+        <tr>
+          <td>{{ t[0] }}</td>
+          <td>
+            <a href="{{ url_for('thesis_detail', t_no=t[0]) }}">
+              {{ t[1] }}
+            </a>
+          </td>
+          <td>{{ t[2] }}</td>
+          <td>{{ t[3] }}</td>
+          <td>{{ t[4] }}</td>
+          <td>{{ t[5] }}</td>
+          <td>{{ t[6] }}</td>
+        </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <td colspan="7" class="muted">No results found.</td>
+      </tr>
+    {% endif %}
+  </tbody>
+</table>
 <!DOCTYPE html>
 <html lang="en">
 <head>

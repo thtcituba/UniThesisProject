@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 
 # -----------------------------
-# HOME → SEARCH
+# HOME
 # -----------------------------
 @app.get("/")
 def home():
@@ -13,7 +13,7 @@ def home():
 
 
 # -----------------------------
-# MASTERS (Parent Tables)
+# MASTERS PAGE (Parent Tables)
 # -----------------------------
 @app.get("/masters")
 def masters():
@@ -29,17 +29,21 @@ def masters():
     cur.execute("SELECT S_ID, S_NAME FROM dbo.SUPERVISOR ORDER BY S_NAME")
     supervisors = cur.fetchall()
 
+    cur.execute("SELECT INS_ID, INS_NAME FROM dbo.INSTITUTE ORDER BY INS_NAME")
+    institutes = cur.fetchall()
+
     conn.close()
     return render_template(
         "masters.html",
         authors=authors,
         universities=universities,
-        supervisors=supervisors
+        supervisors=supervisors,
+        institutes=institutes
     )
 
 
 # -----------------------------
-# THESIS SUBMISSION (Author UI)
+# THESIS SUBMIT (GET)
 # -----------------------------
 @app.get("/submit")
 def submit_page():
@@ -55,19 +59,25 @@ def submit_page():
     cur.execute("SELECT S_ID, S_NAME FROM dbo.SUPERVISOR ORDER BY S_NAME")
     supervisors = cur.fetchall()
 
+    cur.execute("SELECT INS_ID, INS_NAME FROM dbo.INSTITUTE ORDER BY INS_NAME")
+    institutes = cur.fetchall()
+
     conn.close()
     return render_template(
         "submit.html",
         authors=authors,
         universities=universities,
-        supervisors=supervisors
+        supervisors=supervisors,
+        institutes=institutes
     )
 
 
+# -----------------------------
+# THESIS SUBMIT (POST)
+# -----------------------------
 @app.post("/submit")
 def submit_thesis():
     data = request.form
-
     conn = get_conn()
     cur = conn.cursor()
 
@@ -95,12 +105,11 @@ def submit_thesis():
 
     conn.commit()
     conn.close()
-
     return redirect(url_for("search"))
 
 
 # -----------------------------
-# DETAILED SEARCH (YÖK STYLE)
+# SEARCH (GET)
 # -----------------------------
 @app.get("/search")
 def search():
@@ -175,7 +184,6 @@ def search():
     cur.execute(sql, params)
     theses = cur.fetchall()
 
-    # filters for keeping form values
     filters = {
         "q": q,
         "year_from": year_from,
@@ -187,7 +195,6 @@ def search():
         "type": type_
     }
 
-    # dropdown data
     cur.execute("SELECT A_ID, A_NAME FROM dbo.AUTHOR ORDER BY A_NAME")
     authors = cur.fetchall()
 
@@ -236,9 +243,272 @@ def thesis_detail(t_no):
     if not thesis:
         return "Thesis not found", 404
 
-    return render_template("thesis_detail.html", thesis=thesis)
+    return render_template("thesis_detail.html", thesis=thesis, t_no=t_no)
 
 
 # -----------------------------
+# THESIS DELETE
+# -----------------------------
+@app.get("/thesis/<int:t_no>/delete")
+def thesis_delete(t_no):
+    conn = get_conn()
+    cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM dbo.THESIS WHERE T_NO = ?", (t_no,))
+        conn.commit()
+    except:
+        conn.rollback()
+    finally:
+        conn.close()
+    return redirect(url_for("search"))
+
+
+# -----------------------------
+# THESIS EDIT (GET)
+# -----------------------------
+@app.get("/thesis/<int:t_no>/edit")
+def thesis_edit_page(t_no):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+            T_NO, T_TITLE, T_TOPIC, T_ABSTRACT, T_KEYWORD,
+            T_YEAR, T_TYPE, T_INSTITUTE, T_PAGE,
+            T_LANGUAGE, T_SUBDATE, A_ID, UNI_ID, S_ID
+        FROM dbo.THESIS
+        WHERE T_NO = ?
+    """, (t_no,))
+    thesis = cur.fetchone()
+
+    if not thesis:
+        conn.close()
+        return "Thesis not found", 404
+
+    cur.execute("SELECT A_ID, A_NAME FROM dbo.AUTHOR ORDER BY A_NAME")
+    authors = cur.fetchall()
+    cur.execute("SELECT UNI_ID, UNI_NAME FROM dbo.UNIVERSITY ORDER BY UNI_NAME")
+    universities = cur.fetchall()
+    cur.execute("SELECT S_ID, S_NAME FROM dbo.SUPERVISOR ORDER BY S_NAME")
+    supervisors = cur.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "thesis_edit.html",
+        thesis=thesis,
+        authors=authors,
+        universities=universities,
+        supervisors=supervisors
+    )
+
+
+# -----------------------------
+# THESIS EDIT (POST)
+# -----------------------------
+@app.post("/thesis/<int:t_no>/edit")
+def thesis_edit_save(t_no):
+    data = request.form
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE dbo.THESIS
+        SET
+            T_TITLE=?,
+            T_TOPIC=?,
+            T_ABSTRACT=?,
+            T_KEYWORD=?,
+            T_YEAR=?,
+            T_TYPE=?,
+            T_INSTITUTE=?,
+            T_PAGE=?,
+            T_LANGUAGE=?,
+            T_SUBDATE=?,
+            A_ID=?,
+            UNI_ID=?,
+            S_ID=?
+        WHERE T_NO=?
+    """, (
+        data["T_TITLE"],
+        data["T_TOPIC"],
+        data.get("T_ABSTRACT"),
+        data.get("T_KEYWORD"),
+        data["T_YEAR"],
+        data["T_TYPE"],
+        data["T_INSTITUTE"],
+        data["T_PAGE"],
+        data["T_LANGUAGE"],
+        data["T_SUBDATE"],
+        data["A_ID"],
+        data["UNI_ID"],
+        data["S_ID"],
+        t_no
+    ))
+
+    conn.commit()
+    conn.close()
+    return redirect(url_for("thesis_detail", t_no=t_no))
+
+
+# -----------------------------
+# MASTERS CRUD
+# -----------------------------
+@app.post("/masters/author/add")
+def add_author():
+    name = request.form.get("A_NAME", "").strip()
+    if name:
+        conn = get_conn(); cur = conn.cursor()
+        cur.execute("INSERT INTO dbo.AUTHOR (A_NAME) VALUES (?)", (name,))
+        conn.commit(); conn.close()
+    return redirect(url_for("masters"))
+
+@app.post("/masters/author/update/<int:a_id>")
+def update_author(a_id):
+    name = request.form.get("name", "").strip()
+    if name:
+        conn = get_conn(); cur = conn.cursor()
+        cur.execute("UPDATE dbo.AUTHOR SET A_NAME=? WHERE A_ID=?", (name, a_id))
+        conn.commit(); conn.close()
+    return redirect(url_for("masters"))
+
+@app.get("/masters/author/delete/<int:a_id>")
+def delete_author(a_id):
+    conn = get_conn(); cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM dbo.AUTHOR WHERE A_ID=?", (a_id,))
+        conn.commit()
+    except:
+        conn.rollback()
+    finally:
+        conn.close()
+    return redirect(url_for("masters"))
+
+
+@app.post("/masters/university/add")
+def add_university():
+    name = request.form.get("UNI_NAME", "").strip()
+    if name:
+        conn = get_conn(); cur = conn.cursor()
+        cur.execute("INSERT INTO dbo.UNIVERSITY (UNI_NAME) VALUES (?)", (name,))
+        conn.commit(); conn.close()
+    return redirect(url_for("masters"))
+
+@app.post("/masters/university/update/<int:uni_id>")
+def update_university(uni_id):
+    name = request.form.get("name", "").strip()
+    if name:
+        conn = get_conn(); cur = conn.cursor()
+        cur.execute("UPDATE dbo.UNIVERSITY SET UNI_NAME=? WHERE UNI_ID=?", (name, uni_id))
+        conn.commit(); conn.close()
+    return redirect(url_for("masters"))
+
+@app.get("/masters/university/delete/<int:uni_id>")
+def delete_university(uni_id):
+    conn = get_conn(); cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM dbo.UNIVERSITY WHERE UNI_ID=?", (uni_id,))
+        conn.commit()
+    except:
+        conn.rollback()
+    finally:
+        conn.close()
+    return redirect(url_for("masters"))
+
+
+@app.post("/masters/supervisor/add")
+def add_supervisor():
+    name = request.form.get("S_NAME", "").strip()
+    if name:
+        conn = get_conn(); cur = conn.cursor()
+        cur.execute("INSERT INTO dbo.SUPERVISOR (S_NAME) VALUES (?)", (name,))
+        conn.commit(); conn.close()
+    return redirect(url_for("masters"))
+
+@app.post("/masters/supervisor/update/<int:s_id>")
+def update_supervisor(s_id):
+    name = request.form.get("name", "").strip()
+    if name:
+        conn = get_conn(); cur = conn.cursor()
+        cur.execute("UPDATE dbo.SUPERVISOR SET S_NAME=? WHERE S_ID=?", (name, s_id))
+        conn.commit(); conn.close()
+    return redirect(url_for("masters"))
+
+@app.get("/masters/supervisor/delete/<int:s_id>")
+def delete_supervisor(s_id):
+    conn = get_conn(); cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM dbo.SUPERVISOR WHERE S_ID=?", (s_id,))
+        conn.commit()
+    except:
+        conn.rollback()
+    finally:
+        conn.close()
+    return redirect(url_for("masters"))
+
+
+@app.post("/masters/institute/add")
+def add_institute():
+    name = request.form.get("INS_NAME", "").strip()
+    if name:
+        conn = get_conn(); cur = conn.cursor()
+        cur.execute("INSERT INTO dbo.INSTITUTE (INS_NAME) VALUES (?)", (name,))
+        conn.commit(); conn.close()
+    return redirect(url_for("masters"))
+
+@app.post("/masters/institute/update/<int:ins_id>")
+def update_institute(ins_id):
+    name = request.form.get("name", "").strip()
+    if name:
+        conn = get_conn(); cur = conn.cursor()
+        cur.execute("UPDATE dbo.INSTITUTE SET INS_NAME=? WHERE INS_ID=?", (name, ins_id))
+        conn.commit(); conn.close()
+    return redirect(url_for("masters"))
+
+@app.get("/masters/institute/delete/<int:ins_id>")
+def delete_institute(ins_id):
+    conn = get_conn(); cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM dbo.INSTITUTE WHERE INS_ID=?", (ins_id,))
+        conn.commit()
+    except:
+        conn.rollback()
+    finally:
+        conn.close()
+    return redirect(url_for("masters"))
+
+
+# -----------------------------
+# QUICK ADD FROM SUBMIT PAGE
+# -----------------------------
+@app.post("/submit/add-author")
+def submit_add_author():
+    name = request.form.get("new_author", "").strip()
+    if name:
+        conn = get_conn(); cur = conn.cursor()
+        cur.execute("INSERT INTO dbo.AUTHOR (A_NAME) VALUES (?)", (name,))
+        conn.commit(); conn.close()
+    return redirect(url_for("submit_page"))
+
+@app.post("/submit/add-university")
+def submit_add_university():
+    name = request.form.get("new_university", "").strip()
+    if name:
+        conn = get_conn(); cur = conn.cursor()
+        cur.execute("INSERT INTO dbo.UNIVERSITY (UNI_NAME) VALUES (?)", (name,))
+        conn.commit(); conn.close()
+    return redirect(url_for("submit_page"))
+
+@app.post("/submit/add-supervisor")
+def submit_add_supervisor():
+    name = request.form.get("new_supervisor", "").strip()
+    if name:
+        conn = get_conn(); cur = conn.cursor()
+        cur.execute("INSERT INTO dbo.SUPERVISOR (S_NAME) VALUES (?)", (name,))
+        conn.commit(); conn.close()
+    return redirect(url_for("submit_page"))
+
+
 if __name__ == "__main__":
     app.run(debug=True)

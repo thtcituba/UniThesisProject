@@ -1,10 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Thesis System</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f6f7fb; }
+    header { background: #111827; color: #fff; padding: 14px 18px; }
+    header .title { font-size: 18px; font-weight: 700; }
+    main { padding: 18px; max-width: 1100px; margin: 0 auto; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; }
+    .card h2 { margin: 0 0 10px; font-size: 16px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 220px; }
+    label { font-size: 12px; color: #374151; }
+    input, select, textarea {
+      padding: 9px 10px; border-radius: 8px; border: 1px solid #d1d5db;
+      font-size: 14px; background: #fff;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+
+    .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
+    button {
+      padding: 10px 12px; border-radius: 8px; border: 0; cursor: pointer;
+      background: #111827; color: #fff; font-weight: 600;
+    }
+    button.secondary { background: #6b7280; }
+
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; }
+    th, td { padding: 10px 10px; border-bottom: 1px solid #e5e7eb; font-size: 14px; text-align: left; }
+    th { background: #f3f4f6; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #374151; }
+    tr:hover td { background: #fafafa; }
+
+    a.danger { color: #b91c1c; text-decoration: none; font-weight: 700; }
+    .muted { color: #6b7280; font-size: 12px; }
+    .full { grid-column: 1 / -1; }
+  </style>
 </head>
 <body>
-$END$
+  <header>
+    <div class="title">Thesis System</div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
 </body>
 </html>

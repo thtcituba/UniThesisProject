@@ -1,10 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th style="width:240px;">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for row in items %}
+
+      {% if kind == 'author' %}
+        {% set update_url = url_for('update_author', a_id=row[0]) %}
+        {% set delete_url = url_for('delete_author', a_id=row[0]) %}
+      {% elif kind == 'university' %}
+        {% set update_url = url_for('update_university', uni_id=row[0]) %}
+        {% set delete_url = url_for('delete_university', uni_id=row[0]) %}
+      {% else %}
+        {% set update_url = url_for('update_supervisor', s_id=row[0]) %}
+        {% set delete_url = url_for('delete_supervisor', s_id=row[0]) %}
+      {% endif %}
+
+      <tr>
+        <td>{{ row[0] }}</td>
+
+        <td>
+          <form method="POST" action="{{ update_url }}" class="row" style="margin:0;">
+            <input name="name" value="{{ row[1] }}" style="min-width:220px;">
+            <button type="submit" class="secondary">Update</button>
+          </form>
+        </td>
+
+        <td>
+          <a class="danger" href="{{ delete_url }}"
+             onclick="return confirm('Delete this record?');">
+            Delete
+          </a>
+        </td>
+      </tr>
+
+    {% endfor %}
+  </tbody>
+</table>

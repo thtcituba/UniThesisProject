@@ -1,10 +1,70 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card full">
+  <h2> Masters (Parent Tables)</h2>
+  <p class="muted">
+    Add / Update / Delete Universities, Authors, Supervisors. (Homework Rule #2)
+  </p>
+</div>
+
+<div class="grid">
+  <!-- AUTHORS -->
+  <div class="card">
+    <h2>Authors</h2>
+
+    <form method="POST" action="{{ url_for('add_author') }}">
+      <div class="row">
+        <div class="field">
+          <label>Author Name *</label>
+          <input name="A_NAME" required>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="submit">Add</button>
+      </div>
+    </form>
+
+    {% include "partials/_masters_table.html" with items=authors, kind="author" %}
+  </div>
+
+  <!-- UNIVERSITIES -->
+  <div class="card">
+    <h2>🎓 Universities</h2>
+
+    <form method="POST" action="{{ url_for('add_university') }}">
+      <div class="row">
+        <div class="field">
+          <label>University Name *</label>
+          <input name="UNI_NAME" required>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="submit">Add</button>
+      </div>
+    </form>
+
+    {% include "partials/_masters_table.html" with items=universities, kind="university" %}
+  </div>
+
+  <!-- SUPERVISORS -->
+  <div class="card full">
+    <h2>Supervisors</h2>
+
+    <form method="POST" action="{{ url_for('add_supervisor') }}">
+      <div class="row">
+        <div class="field">
+          <label>Supervisor Name *</label>
+          <input name="S_NAME" required>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="submit">Add</button>
+      </div>
+    </form>
+
+    {% include "partials/_masters_table.html" with items=supervisors, kind="supervisor" %}
+  </div>
+</div>
+
+{% endblock %}

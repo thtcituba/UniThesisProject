@@ -1,10 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card full">
+  <h2>Thesis Details</h2>
+  <p class="muted">Rule #4: user selects a thesis and sees all details.</p>
+</div>
+
+<div class="grid">
+  <div class="card full">
+    <h2>{{ thesis[0] }}</h2>
+    <div class="muted">
+      {{ thesis[11] }} · {{ thesis[4] }} · {{ thesis[8] }} · {{ thesis[5] }}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Basic Info</h2>
+    <div><b>Topic:</b> {{ thesis[1] }}</div>
+    <div><b>Keyword:</b> {{ thesis[3] or "-" }}</div>
+    <div><b>Institute:</b> {{ thesis[6] }}</div>
+    <div><b>Page Count:</b> {{ thesis[7] }}</div>
+    <div><b>Submission Date:</b> {{ thesis[9] }}</div>
+  </div>
+
+  <div class="card">
+    <h2>People</h2>
+    <div><b>Author:</b> {{ thesis[10] }}</div>
+    <div><b>University:</b> {{ thesis[11] }}</div>
+    <div><b>Supervisor:</b> {{ thesis[12] }}</div>
+  </div>
+
+  <div class="card full">
+    <h2>Abstract</h2>
+    <div style="white-space: pre-wrap;">{{ thesis[2] or "No abstract." }}</div>
+  </div>
+
+  <div class="card full">
+    <a class="secondary" href="{{ url_for('search') }}">← Back to Search</a>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,10 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card full">
+  <h2>Thesis Submission</h2>
+  <form method="POST" action="{{ url_for('submit_thesis') }}">
+    <div class="row">
+      <div class="field">
+        <label>Title *</label>
+        <input name="T_TITLE">
+      </div>
+
+      <div class="field">
+        <label>Topic *</label>
+        <input name="T_TOPIC">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Abstract</label>
+        <textarea name="T_ABSTRACT"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Keyword</label>
+        <input name="T_KEYWORD">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Year *</label>
+        <input type="number" name="T_YEAR" min="1900" max="2100" required>
+      </div>
+
+      <div class="field">
+        <label>Type *</label>
+        <input name="T_TYPE" required placeholder="MSc / PhD / Specialization">
+      </div>
+
+      <div class="field">
+        <label>Institute *</label>
+        <input name="T_INSTITUTE" >
+      </div>
+
+      <div class="field">
+        <label>Page Count *</label>
+        <input type="number" name="T_PAGE" min="1" required>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Language *</label>
+        <input name="T_LANGUAGE">
+      </div>
+
+      <div class="field">
+        <label>Submission Date *</label>
+        <input type="date" name="T_SUBDATE" required>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Author *</label>
+        <select name="A_ID" required>
+          <option value="" selected disabled>Choose author</option>
+          {% for a in authors %}
+            <option value="{{ a[0] }}">{{ a[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>University *</label>
+        <select name="UNI_ID" required>
+          <option value="" selected disabled>Choose university</option>
+          {% for u in universities %}
+            <option value="{{ u[0] }}">{{ u[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Supervisor *</label>
+        <select name="S_ID" required>
+          <option value="" selected disabled>Choose supervisor</option>
+          {% for s in supervisors %}
+            <option value="{{ s[0] }}">{{ s[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit">Submit Thesis</button>
+    </div>
+  </form>
+</div>
+
+{% endblock %}
